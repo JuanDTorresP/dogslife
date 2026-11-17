@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Administradores: ambos con permisos idénticos.
+    // Debe coincidir con correosPermitidos en firebase-config.js.
+    function esAdmin() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in [
+             'juand.torrespa@gmail.com',
+             'cmazmutis@gmail.com'
+           ];
+    }
+
+    function perroValido(perroId) {
+      return perroId in ['klaus', 'limon'];
+    }
+
+    // Todo registro debe tener un tipo conocido y una fecha AAAA-MM-DD.
+    function registroValido() {
+      let d = request.resource.data;
+      return d.tipo in ['vacuna', 'desparasitacion', 'peso', 'cita']
+        && d.fecha is string
+        && d.fecha.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // Ficha de cada perro: perros/klaus y perros/limon.
+    match /perros/{perroId} {
+      allow read: if esAdmin() && perroValido(perroId);
+      allow create, update: if esAdmin() && perroValido(perroId);
+      // La ficha nunca se borra desde la app, para no perder datos.
+      allow delete: if false;
+
+      // Registros de cada perro: perros/{perro}/registros/{id}.
+      match /registros/{registroId} {
+        allow read: if esAdmin() && perroValido(perroId);
+        allow create: if esAdmin() && perroValido(perroId) && registroValido();
+        // Al editar no se puede cambiar el tipo de registro.
+        allow update: if esAdmin() && perroValido(perroId) && registroValido()
+          && request.resource.data.tipo == resource.data.tipo;
+        allow delete: if esAdmin() && perroValido(perroId);
+      }
+    }
+
+    // Cualquier otra ruta queda cerrada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

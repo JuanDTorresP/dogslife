@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Klaus y Limón · Perros de la familia</title>
+  <meta name="theme-color" content="#1E272B">
+  <meta name="description" content="Fichas, vacunas, peso y visitas al veterinario de Klaus y Limón.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Klaus y Limón">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body data-dog="klaus">
+  <header class="top">
+    <span class="marca">Perros de la familia</span>
+    <div class="sesion"><button class="btn btn-sec btn-mini" id="btn-instalar" hidden>Instalar app</button><span id="sesion" class="sesion"></span></div>
+  </header>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <nav class="tags" aria-label="Elegir perfil">
+    <button class="tag" data-view="klaus" data-perro="klaus" aria-pressed="true">
+      <span class="tag-foto" id="tag-foto-klaus">K</span>
+      <span class="tag-nombre" id="tag-nombre-klaus">Klaus</span>
+      <span class="tag-meta" id="tag-meta-klaus">Sin datos aún</span>
+    </button>
+    <button class="tag" data-view="limon" data-perro="limon" aria-pressed="false">
+      <span class="tag-foto" id="tag-foto-limon">L</span>
+      <span class="tag-nombre" id="tag-nombre-limon">Limón</span>
+      <span class="tag-meta" id="tag-meta-limon">Sin datos aún</span>
+    </button>
+    <button class="tag tag-ambos" data-view="resumen" aria-pressed="false">
+      <span class="tag-puntos" aria-hidden="true"><i></i><i></i></span>
+      <span class="tag-nombre">Los dos</span>
+      <span class="tag-meta">Resumen y agenda</span>
+    </button>
+  </nav>
+
+  <main id="main" class="main"><p class="cargando">Cargando…</p></main>
+
+  <dialog id="dlg" class="dlg"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
