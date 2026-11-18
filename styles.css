@@ -414,3 +414,34 @@ svg { flex: none; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+/* ---------- Raza y estándar ---------- */
+.raza-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 960px) { .raza-grid { grid-template-columns: 1fr; } }
+.comparaciones { display: grid; }
+.comparacion { display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid var(--borde); }
+.comparacion:first-child { border-top: 0; padding-top: 0; }
+.comparacion-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.comparacion-valor { font-size: 1.375rem; font-weight: 600; }
+.rango { margin: 8px 0 4px; }
+.rango-pista { position: relative; height: 10px; border-radius: 5px; background: var(--tarjeta-2); }
+.rango-ideal { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: var(--verde-200); border: 1px solid var(--verde-500); }
+.rango-marca { position: absolute; top: -4px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: var(--verde-900); border: 3px solid var(--tarjeta); box-shadow: 0 0 0 1px var(--verde-900); }
+.rango-etiquetas { position: relative; height: 18px; font-size: .75rem; color: var(--suave); }
+.rango-etiquetas span { position: absolute; transform: translateX(-50%); top: 2px; }
+.consejos, .riesgos { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.consejos li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+.consejos svg { width: 20px; height: 20px; color: var(--verde-700); margin-top: 2px; }
+.riesgos li { display: grid; gap: 2px; padding-top: 12px; border-top: 1px solid var(--borde); font-size: .9375rem; }
+.riesgos li:first-child { border-top: 0; padding-top: 0; }
+.riesgos span { color: var(--suave); }
+.datos-una { grid-template-columns: 1fr; }
+.datos-una .dato { display: grid; grid-template-columns: 9rem 1fr; gap: 12px; }
+.datos-una .dato dd { margin: 0; font-weight: 500; }
+@media (max-width: 480px) { .datos-una .dato { grid-template-columns: 1fr; gap: 2px; } }
+.chip.neutro { background: var(--tarjeta-2); color: var(--suave); }
+.chip-btn { border: 0; cursor: pointer; margin: 6px 0 0; font-family: inherit; }
+.mini-kpis .chip-btn { display: block; margin-top: 4px; }
+.g-banda { fill: var(--dorado); opacity: .2; }
+.g-ref { fill: none; stroke: var(--suave); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.leyenda i.ref { background: none; border-top: 2px dashed var(--suave); height: 0; margin-left: 12px; }

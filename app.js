@@ -5,11 +5,12 @@ import { crearStore, ErrorConfiguracion } from './store.js';
    ========================================================= */
 const PERROS = { klaus: { nombre: 'Klaus' }, limon: { nombre: 'Limón' } };
 const IDS = Object.keys(PERROS);
-const SECCIONES = ['dashboard', 'perfil', 'crecimiento', 'salud', 'veterinario'];
+const SECCIONES = ['dashboard', 'perfil', 'raza', 'crecimiento', 'salud', 'veterinario'];
 
 const CAMPOS_PERFIL = [
   { k: 'nombre', l: 'Nombre', t: 'text' },
-  { k: 'raza', l: 'Raza', t: 'text' },
+  { k: 'raza', l: 'Raza (como quieras escribirla)', t: 'text' },
+  { k: 'razaId', l: 'Estándar de raza para comparar', t: 'select', ops: 'RAZAS' },
   { k: 'sexo', l: 'Sexo', t: 'select', ops: ['', 'Macho', 'Hembra'] },
   { k: 'nacimiento', l: 'Fecha de nacimiento', t: 'date' },
   { k: 'llegada', l: 'Llegada a casa', t: 'date' },
@@ -186,6 +187,150 @@ function banner(html) {
 }
 
 /* =========================================================
+   Estándares de raza (valores de referencia aproximados)
+   Fuentes: estándares FCI y AKC y tablas de crecimiento de uso común.
+   La curva de cachorro es orientativa: cada perro crece distinto.
+   ========================================================= */
+const RAZAS = {
+  granDanes: {
+    nombre: 'Gran Danés',
+    alias: ['gran danes', 'grandanes', 'great dane', 'dogo aleman', 'deutsche dogge'],
+    grupo: 'FCI grupo 2: molosos (dogos)',
+    tamano: 'Gigante',
+    peso: { macho: [64, 79], hembra: [50, 64] },
+    altura: { macho: [76, 86], hembra: [71, 81] },
+    notaAltura: 'La FCI pide un mínimo de 80 cm en machos y 72 cm en hembras.',
+    vida: '7 a 10 años',
+    adultoMeses: 18, maduroMeses: 24, seniorAnios: 6,
+    crecimiento: {
+      macho:  { 2: [7, 10], 3: [11, 16], 4: [16, 24], 5: [23, 32], 6: [30, 41], 7: [36, 47], 8: [41, 52], 9: [45, 57], 10: [48, 61], 12: [52, 68], 15: [58, 74], 18: [62, 79], 24: [64, 79] },
+      hembra: { 2: [6, 9], 3: [9, 14], 4: [14, 21], 5: [19, 28], 6: [25, 35], 7: [29, 40], 8: [33, 44], 9: [36, 48], 10: [39, 51], 12: [43, 56], 15: [47, 61], 18: [50, 64], 24: [50, 64] },
+    },
+    caracter: 'Noble, tranquilo y muy apegado a su familia. Necesita socialización temprana por su tamaño.',
+    ejercicio: 'Moderado. Paseos diarios; en cachorro, evita saltos, escaleras y carreras largas.',
+    pelaje: 'Corto. Cepillado semanal; revisar uñas y orejas.',
+    riesgos: [
+      ['Dilatación y torsión gástrica', 'Es una emergencia. Señales: abdomen hinchado, arcadas sin vomitar, inquietud. Reparte la comida en 2 o 3 tomas y evita ejercicio intenso una hora antes y después de comer. Pregunta al veterinario por la gastropexia preventiva.'],
+      ['Miocardiopatía dilatada', 'Enfermedad del corazón frecuente en la raza. Pide al veterinario controles cardíacos periódicos desde adulto.'],
+      ['Displasia de cadera y codo', 'Un crecimiento lento y un peso adecuado ayudan. Evita el ejercicio de impacto mientras crece.'],
+      ['Osteosarcoma', 'Una cojera que no mejora en pocos días merece consulta.'],
+      ['Síndrome de Wobbler', 'Inestabilidad o paso tambaleante de las patas traseras.'],
+      ['Hipotiroidismo', 'Cansancio, aumento de peso o problemas de piel sin otra causa.'],
+    ],
+    etapas: {
+      cachorro: ['Alimento para cachorro de raza gigante, sin suplementos de calcio salvo indicación veterinaria.', 'Crecer despacio es mejor que crecer rápido: vigila que no se pase del rango.', 'Varias comidas pequeñas al día.', 'Ejercicio suave y en superficies blandas.'],
+      adulto: ['Mantén la condición corporal entre 4 y 5 de 9.', 'Controles cardíacos según indique el veterinario.', 'Dos o tres comidas al día por el riesgo de torsión gástrica.'],
+      senior: ['En razas gigantes la etapa senior llega pronto: chequeos cada 6 meses.', 'Atención a la movilidad y al corazón.'],
+    },
+  },
+  yorkshire: {
+    nombre: 'Yorkshire Terrier',
+    alias: ['yorkshire', 'yorkshire terrier', 'yorkie', 'york'],
+    grupo: 'FCI grupo 3: terriers (terriers de compañía)',
+    tamano: 'Toy',
+    peso: { macho: [2, 3.2], hembra: [2, 3.2] },
+    notaPeso: 'El estándar fija un máximo de 3,2 kg. “Miniatura” no es una variedad oficial; un adulto por debajo de 1,8 kg necesita control veterinario más cercano.',
+    altura: { macho: [18, 23], hembra: [18, 23] },
+    notaAltura: 'El estándar no fija altura; es un valor habitual de referencia.',
+    vida: '13 a 16 años',
+    adultoMeses: 12, maduroMeses: 12, seniorAnios: 9,
+    crecimiento: {
+      macho:  { 2: [0.5, 1.0], 3: [0.7, 1.4], 4: [0.9, 1.8], 5: [1.1, 2.2], 6: [1.3, 2.5], 7: [1.4, 2.7], 8: [1.5, 2.9], 10: [1.7, 3.1], 12: [1.8, 3.2] },
+      hembra: { 2: [0.5, 1.0], 3: [0.7, 1.4], 4: [0.9, 1.8], 5: [1.1, 2.2], 6: [1.3, 2.5], 7: [1.4, 2.7], 8: [1.5, 2.9], 10: [1.7, 3.1], 12: [1.8, 3.2] },
+    },
+    caracter: 'Vivaz, valiente y muy apegado. Puede ser ladrador y desconfiado con extraños.',
+    ejercicio: 'Bajo a moderado. Paseos cortos y juego en casa.',
+    pelaje: 'Largo y fino, sin subpelo. Cepillado diario o corte corto; es sensible al frío.',
+    riesgos: [
+      ['Hipoglucemia en cachorros', 'Debilidad, temblores o somnolencia. Comidas frecuentes (3 o 4 al día) y consulta urgente si aparecen señales.'],
+      ['Enfermedad dental', 'Muy frecuente. Cepillado varias veces por semana y limpiezas según el veterinario. Revisar dientes de leche retenidos hacia los 6 meses.'],
+      ['Colapso traqueal', 'Tos como “graznido de ganso”. Usa arnés en vez de collar.'],
+      ['Luxación de rótula', 'Saltitos o cojera intermitente en una pata trasera.'],
+      ['Shunt portosistémico', 'Crecimiento lento o comportamiento extraño después de comer.'],
+      ['Legg-Calvé-Perthes', 'Cojera trasera progresiva, sobre todo entre los 4 y 12 meses.'],
+    ],
+    etapas: {
+      cachorro: ['3 o 4 comidas pequeñas al día para prevenir la hipoglucemia.', 'Cuidado con caídas desde sofás o brazos.', 'Acostumbrarlo desde ya al cepillado de dientes y pelo.'],
+      adulto: ['Cepillado dental frecuente.', 'Arnés en lugar de collar.', 'Vigila que no supere 3,2 kg.'],
+      senior: ['Chequeos cada 6 meses, con atención a dientes, corazón y tráquea.'],
+    },
+  },
+};
+const OPCIONES_RAZA = [['', 'Sin definir'], ...Object.entries(RAZAS).map(([k, r]) => [k, r.nombre])];
+
+const normalizar = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+function razaDe(id) {
+  const p = estado.perfiles[id];
+  if (p.razaId && RAZAS[p.razaId]) return { id: p.razaId, ...RAZAS[p.razaId] };
+  const t = normalizar(p.raza);
+  if (!t) return null;
+  const k = Object.keys(RAZAS).find(k => RAZAS[k].alias.some(a => t.includes(a)));
+  return k ? { id: k, ...RAZAS[k] } : null;
+}
+const sexoClave = p => p.sexo === 'Hembra' ? 'hembra' : p.sexo === 'Macho' ? 'macho' : null;
+// Rango [mín, máx] según sexo; sin sexo, se usa el rango que cubre a ambos.
+function rangoSexo(obj, p) {
+  const s = sexoClave(p);
+  if (s) return obj[s];
+  return [Math.min(obj.macho[0], obj.hembra[0]), Math.max(obj.macho[1], obj.hembra[1])];
+}
+function mesesEntre(desde, hasta) {
+  const a = aFecha(desde), b = aFecha(hasta);
+  return a && b ? (b - a) / (86400000 * 30.4375) : null;
+}
+// Peso esperado a cierta edad (meses), interpolando la curva de crecimiento.
+function pesoEsperado(raza, p, meses) {
+  if (meses == null || meses < 0) return null;
+  const s = sexoClave(p);
+  const curva = s ? raza.crecimiento[s] : null;
+  const curvaDe = m => {
+    if (curva) return curva[m];
+    const a = raza.crecimiento.macho[m], b = raza.crecimiento.hembra[m];
+    return [Math.min(a[0], b[0]), Math.max(a[1], b[1])];
+  };
+  const claves = Object.keys(raza.crecimiento.macho).map(Number).sort((a, b) => a - b);
+  if (meses < claves[0]) return null;
+  if (meses >= claves[claves.length - 1]) return rangoSexo(raza.peso, p);
+  const i = claves.findIndex(k => k > meses);
+  const m0 = claves[i - 1], m1 = claves[i], f = (meses - m0) / (m1 - m0);
+  const r0 = curvaDe(m0), r1 = curvaDe(m1);
+  return [r0[0] + (r1[0] - r0[0]) * f, r0[1] + (r1[1] - r0[1]) * f];
+}
+// Compara un valor con un rango y devuelve el estado.
+function compararRango(v, [min, max]) {
+  if (v < min * 0.85) return { cls: 'mal', txt: 'Por debajo del rango', pos: 'bajo' };
+  if (v < min) return { cls: 'aviso', txt: 'Ligeramente por debajo', pos: 'bajo' };
+  if (v > max * 1.15) return { cls: 'mal', txt: 'Por encima del rango', pos: 'alto' };
+  if (v > max) return { cls: 'aviso', txt: 'Ligeramente por encima', pos: 'alto' };
+  return { cls: 'bien', txt: 'Dentro del rango', pos: 'ok' };
+}
+function estadoPeso(id) {
+  const raza = razaDe(id), p = estado.perfiles[id], m = mediciones(id, 'kg')[0];
+  if (!raza || !m || !p.nacimiento) return null;
+  const meses = mesesEntre(p.nacimiento, m.fecha);
+  const rango = pesoEsperado(raza, p, meses);
+  if (!rango) return null;
+  return { ...compararRango(Number(m.kg), rango), rango, valor: Number(m.kg), meses, fecha: m.fecha };
+}
+function estadoAltura(id) {
+  const raza = razaDe(id), p = estado.perfiles[id], m = mediciones(id, 'altura')[0];
+  if (!raza || !m) return null;
+  const rango = rangoSexo(raza.altura, p);
+  const meses = p.nacimiento ? mesesEntre(p.nacimiento, m.fecha) : null;
+  if (meses != null && meses < raza.adultoMeses) return { cls: 'neutro', txt: 'En crecimiento', rango, valor: Number(m.altura), creciendo: true };
+  return { ...compararRango(Number(m.altura), rango), rango, valor: Number(m.altura) };
+}
+function etapaDe(id) {
+  const raza = razaDe(id), m = mesesDesde(estado.perfiles[id].nacimiento);
+  if (!raza || m == null) return null;
+  if (m < raza.adultoMeses) return { clave: 'cachorro', txt: 'Cachorro en crecimiento', detalle: `Alcanza su talla adulta hacia los ${raza.adultoMeses} meses.` };
+  if (m < raza.maduroMeses) return { clave: 'adulto', txt: 'Adulto joven', detalle: `Termina de desarrollarse hacia los ${raza.maduroMeses} meses.` };
+  if (m / 12 >= raza.seniorAnios) return { clave: 'senior', txt: 'Senior', detalle: `En esta raza la etapa senior empieza hacia los ${raza.seniorAnios} años.` };
+  return { clave: 'adulto', txt: 'Adulto', detalle: `Esperanza de vida de la raza: ${raza.vida}.` };
+}
+const rangoTxt = ([a, b], u) => `${num(a)} a ${num(b)} ${u}`;
+
+/* =========================================================
    Consultas sobre los datos
    ========================================================= */
 const registrosDe = (id, tipos) => estado.registros[id].filter(r => tipos.includes(r.tipo));
@@ -222,8 +367,9 @@ function campoHTML(c, valor, pref) {
   let ctl;
   if (c.t === 'textarea') ctl = `<textarea id="${id}" name="${c.k}" rows="3">${v}</textarea>`;
   else if (c.t === 'select') {
-    ctl = `<select id="${id}" name="${c.k}">${c.ops.map(o =>
-      `<option value="${esc(o)}"${o === (valor ?? '') ? ' selected' : ''}>${o || 'Sin especificar'}</option>`).join('')}</select>`;
+    const ops = c.ops === 'RAZAS' ? OPCIONES_RAZA : c.ops.map(o => [o, o || 'Sin especificar']);
+    ctl = `<select id="${id}" name="${c.k}">${ops.map(([v, t]) =>
+      `<option value="${esc(v)}"${v === (valor ?? '') ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
   } else {
     const extra = c.t === 'number'
       ? ` step="${c.step ?? 'any'}" min="${c.min ?? 0}"${c.max ? ` max="${c.max}"` : ''} inputmode="decimal"` : '';
@@ -251,6 +397,7 @@ function renderSidebar() {
   const nav = [
     ['dashboard', 'casa', 'Dashboard'],
     ['perfil', 'huella', `Perfil de ${esc(nombreDe(id))}`],
+    ['raza', 'perro', 'Raza y estándar'],
     ['crecimiento', 'tendencia', 'Crecimiento'],
     ['salud', 'corazon', 'Salud'],
     ['veterinario', 'estetoscopio', 'Veterinario'],
@@ -316,7 +463,7 @@ function render() {
   }
 
   if (estado.resumen) { main.innerHTML = vistaResumen(); return; }
-  const vistas = { dashboard: vistaDashboard, perfil: vistaPerfil, crecimiento: vistaCrecimiento, salud: vistaSalud, veterinario: vistaVeterinario };
+  const vistas = { dashboard: vistaDashboard, perfil: vistaPerfil, raza: vistaRaza, crecimiento: vistaCrecimiento, salud: vistaSalud, veterinario: vistaVeterinario };
   // No borrar lo que se está escribiendo en la ficha si llega una actualización.
   if (estado.seccion === 'perfil' && estado.editando && $('#form-ficha')) return;
   main.innerHTML = vistas[estado.seccion](estado.perro);
@@ -346,7 +493,7 @@ function heroHTML(id) {
   const datos = [
     ['calendario', 'Nacimiento', fechaNum(p.nacimiento)],
     ['casa', 'Llegada a casa', fechaNum(p.llegada)],
-    ['perro', 'Raza', esc(p.raza || '')],
+    ['perro', 'Raza', esc(p.raza || razaDe(id)?.nombre || '')],
   ].filter(d => d[2]);
   return `<section class="hero" aria-label="Portada de ${esc(nombreDe(id))}">
     <div class="hero-foto">${portada ? `<img src="${esc(portada)}" alt="Foto de ${esc(nombreDe(id))}">` : `<div class="hero-vacia">${PERRO_LINEA}</div>`}</div>
@@ -378,6 +525,10 @@ function delta(lista, campo, fmt) {
   return `<span class="${cls}">${d > 0 ? '↑' : d < 0 ? '↓' : ''} ${signo}${fmt(Math.abs(d))}</span><br>vs. medición anterior`;
 }
 
+function chipRaza(e, id) {
+  if (!e) return '';
+  return `<button class="chip ${e.cls} chip-btn" data-ir="${rutaDe(id, 'raza')}" title="Ver estándar de la raza">${e.cls === 'neutro' ? e.txt : e.txt.replace(' del rango', '').replace('Dentro', 'En rango de raza')}</button>`;
+}
 function kpisHTML(id) {
   const p = estado.perfiles[id];
   const pesos = mediciones(id, 'kg'), alturas = mediciones(id, 'altura');
@@ -387,10 +538,10 @@ function kpisHTML(id) {
     `<div class="card kpi"><div class="kpi-icono">${ico(icono)}</div><div>${`<div class="kpi-label">${label}</div>`}${cuerpo}</div></div>`;
   return `<section class="kpis" aria-label="Indicadores">
     ${tarjeta('pesa', 'Peso actual', pesos.length
-      ? `<div class="kpi-fila"><div class="kpi-valor">${num(pesos[0].kg)} <small>kg</small></div>${sparkline(pesos.slice(0, 6).reverse().map(r => Number(r.kg)))}</div><div class="kpi-nota">${delta(pesos, 'kg', kg)}</div>`
+      ? `<div class="kpi-fila"><div class="kpi-valor">${num(pesos[0].kg)} <small>kg</small></div>${sparkline(pesos.slice(0, 6).reverse().map(r => Number(r.kg)))}</div><div class="kpi-nota">${delta(pesos, 'kg', kg)}</div>${chipRaza(estadoPeso(id), id)}`
       : `<div class="kpi-valor">—</div><div class="kpi-nota"><button class="enlace" data-accion="agregar" data-tipo="peso">Registrar peso</button></div>`)}
     ${tarjeta('regla', 'Altura actual', alturas.length
-      ? `<div class="kpi-fila"><div class="kpi-valor">${num(alturas[0].altura)} <small>cm</small></div>${sparkline(alturas.slice(0, 6).reverse().map(r => Number(r.altura)))}</div><div class="kpi-nota">${delta(alturas, 'altura', cm)}</div>`
+      ? `<div class="kpi-fila"><div class="kpi-valor">${num(alturas[0].altura)} <small>cm</small></div>${sparkline(alturas.slice(0, 6).reverse().map(r => Number(r.altura)))}</div><div class="kpi-nota">${delta(alturas, 'altura', cm)}</div>${chipRaza(estadoAltura(id), id)}`
       : `<div class="kpi-valor">—</div><div class="kpi-nota"><button class="enlace" data-accion="agregar" data-tipo="peso">Registrar altura</button></div>`)}
     ${tarjeta('pastel', 'Edad', e
       ? `<div class="kpi-valor">${e.valor}</div><div class="kpi-nota">${e.nota ? `(${e.nota})` : ''}</div>`
@@ -417,11 +568,22 @@ function graficaHTML(id, campo) {
       <button class="enlace" data-accion="agregar" data-tipo="peso">Agregar medición ${ico('flecha')}</button></p>`;
   }
   const W = 460, H = 240, L = 36, R = 12, T = 12, B = 28;
-  const vals = pts.map(p => p.v);
+  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
+  // Referencia de la raza (solo peso): rango esperado en cada fecha del período.
+  const raza = razaDe(id), perfil = estado.perfiles[id];
+  let ref = [];
+  if (campo === 'kg' && raza && perfil.nacimiento) {
+    const pasos = 24;
+    for (let i = 0; i <= pasos; i++) {
+      const t = t0 + (t1 - t0) * i / pasos;
+      const r = pesoEsperado(raza, perfil, (t - aFecha(perfil.nacimiento).getTime()) / (86400000 * 30.4375));
+      if (r) ref.push({ t, min: r[0], max: r[1] });
+    }
+  }
+  const vals = [...pts.map(p => p.v), ...ref.map(r => r.max)];
   const paso = pasoBonito(Math.max(...vals) - Math.min(0, ...vals) || 1);
   const ymin = Math.min(0, Math.floor(Math.min(...vals) / paso) * paso);
   const ymax = Math.ceil(Math.max(...vals) / paso) * paso || paso;
-  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
   const x = t => L + (t - t0) / (t1 - t0 || 1) * (W - L - R);
   const y = v => T + (1 - (v - ymin) / (ymax - ymin)) * (H - T - B);
   let rejilla = '';
@@ -440,11 +602,15 @@ function graficaHTML(id, campo) {
     `<text class="g-eje" x="${x(m.t).toFixed(1)}" y="${H - 8}" text-anchor="middle">${m.txt.charAt(0).toUpperCase() + m.txt.slice(1)}</text>`).join('');
   const linea = pts.map(p => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
   const area = `${x(t0).toFixed(1)},${y(ymin).toFixed(1)} ${linea} ${x(t1).toFixed(1)},${y(ymin).toFixed(1)}`;
-  return `<div class="leyenda"><i></i>${campo === 'kg' ? 'Peso (kg)' : 'Altura (cm)'}</div>
+  const banda = ref.length > 1
+    ? `<polygon class="g-banda" points="${[...ref.map(r => `${x(r.t).toFixed(1)},${y(r.max).toFixed(1)}`), ...ref.slice().reverse().map(r => `${x(r.t).toFixed(1)},${y(r.min).toFixed(1)}`)].join(' ')}"/>
+       <polyline class="g-ref" points="${ref.map(r => `${x(r.t).toFixed(1)},${y((r.min + r.max) / 2).toFixed(1)}`).join(' ')}"/>` : '';
+  return `<div class="leyenda"><i></i>${campo === 'kg' ? 'Peso (kg)' : 'Altura (cm)'}${banda ? `<i class="ref"></i>Referencia ${esc(raza.nombre)}` : ''}</div>
     <div class="grafica-envoltura"><figure class="grafica" style="margin:0">
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Evolución de ${campo === 'kg' ? 'peso' : 'altura'}: de ${num(pts[0].v)} a ${num(pts[pts.length - 1].v)} ${unidad}">
         ${rejilla}
         <polygon class="g-area" points="${area}"/>
+        ${banda}
         <polyline class="g-linea" points="${linea}"/>
         ${pts.map(p => `<circle class="g-punto" cx="${x(p.t).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="5"><title>${fechaCorta(p.f)}: ${num(p.v)} ${unidad}</title></circle>`).join('')}
         ${etiquetas}
@@ -557,6 +723,7 @@ function vistaPerfil(id) {
       else if (c.k === 'costoAlimento') v = cop(v);
       else if (c.k === 'consumo') v = `${num(v, 0)} g/día`;
       else if (c.k === 'condicion') v = `${num(v)} / 9`;
+      else if (c.k === 'razaId') v = esc(RAZAS[v]?.nombre || 'Sin definir');
       else v = esc(v);
       if (c.k === 'telefonoVet') v = `<a href="tel:${esc(String(p[c.k]).replace(/\s/g, ''))}">${v}</a>`;
       return `<div class="dato"><dt>${c.l.replace(/ \(.*\)$/, '')}</dt><dd>${v}</dd></div>`;
@@ -566,6 +733,93 @@ function vistaPerfil(id) {
       ${p.notas ? `<div class="notas">${esc(p.notas)}</div>` : ''}</section>`;
   }
   return `${cabeza}<div class="perfil">${fotoCardHTML(id)}${cuerpo}</div>`;
+}
+
+/* =========================================================
+   Raza y estándar
+   ========================================================= */
+function barraRango(valor, [min, max], u) {
+  // Escala visual: 25 % de margen a cada lado del rango ideal.
+  const span = max - min || 1, lo = min - span * 0.6, hi = max + span * 0.6;
+  const pct = v => Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
+  return `<div class="rango" role="img" aria-label="${num(valor)} ${u}; rango de referencia ${rangoTxt([min, max], u)}">
+    <div class="rango-pista"><span class="rango-ideal" style="left:${pct(min)}%;width:${pct(max) - pct(min)}%"></span>
+      <span class="rango-marca" style="left:${pct(valor)}%"></span></div>
+    <div class="rango-etiquetas"><span style="left:${pct(min)}%">${num(min)}</span><span style="left:${pct(max)}%">${num(max)}</span></div>
+  </div>`;
+}
+function filaComparacion(icono, titulo, valor, estadoObj, detalle, barra) {
+  const chip = estadoObj ? (estadoObj.cls === 'neutro' ? `<span class="chip neutro">${estadoObj.txt}</span>` : `<span class="chip ${estadoObj.cls}">${estadoObj.txt}</span>`) : '';
+  return `<div class="comparacion">
+    <span class="lt-icono">${ico(icono)}</span>
+    <div class="comparacion-cuerpo">
+      <div class="comparacion-cabeza"><span class="kpi-label">${titulo}</span>${chip}</div>
+      <div class="comparacion-valor">${valor}</div>
+      ${barra || ''}
+      <div class="kpi-nota">${detalle}</div>
+    </div></div>`;
+}
+
+function vistaRaza(id) {
+  const raza = razaDe(id), p = estado.perfiles[id];
+  if (!raza) {
+    return `<div class="seccion-cabeza"><div><h1 class="seccion-titulo">Raza y estándar</h1>
+        <p class="seccion-sub">Elige la raza de ${esc(nombreDe(id))} para compararlo con el estándar.</p></div></div>
+      <section class="card"><p class="vacio">Con la raza definida verás su rango de peso según la edad, la altura adulta, su etapa de vida y los riesgos de salud que conviene vigilar.</p>
+        <div class="botones" style="margin-top:12px">${Object.entries(RAZAS).map(([k, r]) =>
+          `<button class="btn btn-primario" data-accion="elegir-raza" data-raza="${k}">${ico('perro')}${r.nombre}</button>`).join('')}</div></section>`;
+  }
+  const ep = estadoPeso(id), ea = estadoAltura(id), et = etapaDe(id);
+  const sexo = sexoClave(p);
+  const avisos = [];
+  if (!sexo) avisos.push(`Indica si ${esc(nombreDe(id))} es macho o hembra para afinar los rangos.`);
+  if (!p.nacimiento) avisos.push('Agrega la fecha de nacimiento para comparar el peso con su edad.');
+  const pesoUlt = mediciones(id, 'kg')[0], altUlt = mediciones(id, 'altura')[0];
+  const cc = tiene(p.condicion) ? Number(p.condicion) : null;
+  const ccEstado = cc == null ? null : cc < 4 ? { cls: cc < 3 ? 'mal' : 'aviso', txt: 'Por debajo de lo ideal' } : cc > 5 ? { cls: cc > 6 ? 'mal' : 'aviso', txt: 'Por encima de lo ideal' } : { cls: 'bien', txt: 'Ideal' };
+
+  const filas = [
+    filaComparacion('pesa', 'Peso', pesoUlt ? kg(pesoUlt.kg) : '—', ep,
+      ep ? `Esperado para ${num(ep.meses)} meses: ${rangoTxt(ep.rango, 'kg')} (medición del ${fechaCorta(ep.fecha)}).`
+         : pesoUlt ? 'Falta la fecha de nacimiento, o es menor de 2 meses.' : 'Registra su peso en Crecimiento.',
+      ep ? barraRango(ep.valor, ep.rango, 'kg') : ''),
+    filaComparacion('regla', 'Altura a la cruz', altUlt ? cm(altUlt.altura) : '—', ea,
+      ea ? (ea.creciendo ? `Altura adulta esperada: ${rangoTxt(ea.rango, 'cm')}.` : `Estándar adulto: ${rangoTxt(ea.rango, 'cm')}.`)
+         : `Estándar adulto: ${rangoTxt(rangoSexo(raza.altura, p), 'cm')}.`,
+      ea && !ea.creciendo ? barraRango(ea.valor, ea.rango, 'cm') : ''),
+    filaComparacion('perro', 'Condición corporal', cc != null ? `${num(cc)} / 9` : '—', ccEstado,
+      'Lo ideal es 4 o 5 de 9: costillas que se palpan sin verse y cintura marcada.', cc != null ? barraRango(cc, [4, 5], '') : ''),
+    filaComparacion('pastel', 'Etapa de vida', et ? et.txt : '—', null, et ? et.detalle : 'Agrega la fecha de nacimiento.'),
+  ].join('');
+
+  const datos = [
+    ['Grupo', raza.grupo], ['Tamaño', raza.tamano],
+    ['Peso adulto', sexo ? `${rangoTxt(raza.peso[sexo], 'kg')} (${sexo})` : `Macho ${rangoTxt(raza.peso.macho, 'kg')}; hembra ${rangoTxt(raza.peso.hembra, 'kg')}`],
+    ['Altura adulta', sexo ? `${rangoTxt(raza.altura[sexo], 'cm')} (${sexo})` : `Macho ${rangoTxt(raza.altura.macho, 'cm')}; hembra ${rangoTxt(raza.altura.hembra, 'cm')}`],
+    ['Esperanza de vida', raza.vida], ['Talla adulta', `Hacia los ${raza.adultoMeses} meses`],
+    ['Carácter', raza.caracter], ['Ejercicio', raza.ejercicio], ['Pelaje y cuidados', raza.pelaje],
+  ];
+  const notas = [raza.notaPeso, raza.notaAltura].filter(Boolean);
+  const consejos = et ? raza.etapas[et.clave] : raza.etapas.cachorro;
+
+  return `<div class="seccion-cabeza"><div><h1 class="seccion-titulo">${esc(raza.nombre)}</h1>
+      <p class="seccion-sub">Cómo está ${esc(nombreDe(id))} frente al estándar de su raza.</p></div>
+      <button class="btn btn-sec" data-ir="${rutaDe(id, 'perfil')}" data-editar>${ico('lapiz')}Cambiar raza o sexo</button></div>
+    ${avisos.length ? `<div class="banner" style="margin:0">${avisos.join(' ')}</div>` : ''}
+    <div class="raza-grid">
+      <section class="card"><div class="card-cabeza"><h2 class="card-titulo">${ico('tendencia')}Cómo está ${esc(nombreDe(id))}</h2></div>
+        <div class="comparaciones">${filas}</div></section>
+      <section class="card"><div class="card-cabeza"><h2 class="card-titulo">${ico('corazon')}Cuidados para su etapa</h2></div>
+        <ul class="consejos">${consejos.map(c => `<li>${ico('check')}<span>${esc(c)}</span></li>`).join('')}</ul></section>
+    </div>
+    <div class="raza-grid">
+      <section class="card"><div class="card-cabeza"><h2 class="card-titulo">${ico('estetoscopio')}Salud: qué vigilar</h2></div>
+        <ul class="riesgos">${raza.riesgos.map(([t, d]) => `<li><strong>${esc(t)}</strong><span>${esc(d)}</span></li>`).join('')}</ul></section>
+      <section class="card"><div class="card-cabeza"><h2 class="card-titulo">${ico('huella')}Ficha de la raza</h2></div>
+        <dl class="datos datos-una">${datos.map(([l, v]) => `<div class="dato"><dt>${l}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+        ${notas.map(n => `<p class="ayuda">${esc(n)}</p>`).join('')}</section>
+    </div>
+    <p class="ayuda">Valores de referencia aproximados, basados en los estándares FCI y AKC y en curvas de crecimiento de uso común. Cada perro es distinto: usa esta guía para conversar con su veterinario, no para reemplazarlo.</p>`;
 }
 
 /* =========================================================
@@ -638,7 +892,7 @@ function vistaResumen() {
       <div class="dos-portada">${portada ? `<img src="${esc(portada)}" alt="">` : ''}<div class="foto-nombre">${esc(nombreDe(id))}</div></div>
       <div class="dos-cuerpo">
         <div class="mini-kpis">
-          <div><small>Peso</small><strong>${peso ? kg(peso.kg) : '—'}</strong></div>
+          <div><small>Peso</small><strong>${peso ? kg(peso.kg) : '—'}</strong>${chipRaza(estadoPeso(id), id)}</div>
           <div><small>Altura</small><strong>${alt ? cm(alt.altura) : '—'}</strong></div>
           <div><small>Edad</small><strong>${esc(edad(p.nacimiento)) || '—'}</strong></div>
         </div>
@@ -813,6 +1067,14 @@ document.addEventListener('click', async e => {
       }
       break;
     case 'exportar': exportar(); break;
+    case 'elegir-raza': {
+      const k = b.dataset.raza, p = estado.perfiles[id];
+      try {
+        await store.guardarPerfil(id, { razaId: k, ...(p.raza ? {} : { raza: RAZAS[k].nombre }) });
+        toast(`Raza: ${RAZAS[k].nombre}`);
+      } catch (err) { errorAccion(err); }
+      break;
+    }
   }
 });
 
@@ -822,6 +1084,7 @@ document.addEventListener('submit', async e => {
     const id = estado.perro;
     const datos = leerForm(e.target, CAMPOS_PERFIL);
     if (!datos.nombre) datos.nombre = PERROS[id].nombre;
+    if (datos.razaId && !datos.raza) datos.raza = RAZAS[datos.razaId].nombre;
     try {
       await store.guardarPerfil(id, datos);
       estado.editando = false;
