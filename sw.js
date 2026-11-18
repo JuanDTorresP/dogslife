@@ -1,6 +1,6 @@
 // Service worker: permite abrir la app sin señal y que cargue rápido.
 // Cambia VERSION cada vez que subas cambios para que los teléfonos tomen la nueva versión.
-const VERSION = 'v8';
+const VERSION = 'v10';
 const CACHE = 'perros-' + VERSION;
 const BASE = [
   './', './index.html', './manifest.webmanifest',

@@ -445,3 +445,24 @@ svg { flex: none; }
 .g-banda { fill: var(--dorado); opacity: .2; }
 .g-ref { fill: none; stroke: var(--suave); stroke-width: 1.5; stroke-dasharray: 5 4; }
 .leyenda i.ref { background: none; border-top: 2px dashed var(--suave); height: 0; margin-left: 12px; }
+
+/* ---------- Indicadores objetivos ---------- */
+.graficas-edad { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+@media (max-width: 960px) { .graficas-edad { grid-template-columns: 1fr; } }
+.semaforo { display: inline-flex; align-items: center; gap: 6px; font-size: .875rem; color: var(--suave); margin-top: 6px; }
+.semaforo strong { color: var(--tinta); margin-left: 4px; }
+.semaforo-punto { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.semaforo-punto.bien { background: var(--verde-700); }
+.semaforo-punto.aviso { background: var(--dorado); }
+.semaforo-punto.mal { background: var(--rojo); }
+.kpi-boton { all: unset; cursor: pointer; display: block; }
+.kpi-boton:focus-visible { outline: 3px solid var(--dorado); outline-offset: 2px; border-radius: 8px; }
+.comparacion-valor small { font-size: .8125rem; font-weight: 500; color: var(--suave); }
+.g-punto.g-bien { fill: var(--verde-700); }
+.g-punto.g-aviso { fill: var(--dorado); }
+.g-punto.g-mal { fill: var(--rojo); }
+.g-hoy { stroke: var(--suave); stroke-width: 1; stroke-dasharray: 2 3; }
+.leyenda { flex-wrap: wrap; row-gap: 4px; }
+.leyenda i.banda { width: 14px; height: 10px; background: var(--dorado); opacity: .35; border-radius: 2px; margin-left: 12px; }
+.requisitos li.hecho { color: var(--suave); text-decoration: line-through; }
+.requisitos .falta { width: 16px; height: 16px; border: 2px solid var(--dorado); border-radius: 50%; margin-top: 3px; }
